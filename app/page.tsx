@@ -1,6 +1,9 @@
+'use client'
 import TelegramAuth from "@/components/TelegramAuth";
 import { getSession } from "@/utils/session";
-import FortuneWheel from "@/components/FortuneWheel";
+import CarouselPrizes from "@/components/CarouselPrizes";
+import { prizes } from "@/data/prizes";
+
 
 
 
@@ -12,22 +15,26 @@ export default async function Home() {
 
 
 
-
-
-
   return (
     // <main className="flex min-h-screen flex-col items-center justify-center p-24">
     //   {/* <h1 className="text-4xl font-bold mb-8">Jwt Authentication for Telegram Mini Apps</h1>
     //   <pre>{JSON.stringify(session, null, 2)}</pre> */}
     //   {/* <TelegramAuth /> */}
     // </main>
+    //==================================================================================================
+
+
 
     <div>
-      <FortuneWheel
-        title="Наше колесо фортуны"
-        subtitle="Покрутите и получите случайный приз!"
-        spinDuration={3500}
-      />
+      {/* <PrizeCard id={""} name={"dasdsa"} description={"asdasd"} /> */}
+
+      <CarouselPrizes prizes={prizes} />
     </div>
+
+
+
+
+
+    //==================================================================================================
   )
 }
