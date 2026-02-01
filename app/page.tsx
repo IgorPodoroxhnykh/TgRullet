@@ -1,8 +1,10 @@
-'use client'
+// 'use client'
 import TelegramAuth from "@/components/TelegramAuth";
 import { getSession } from "@/utils/session";
 import CarouselPrizes from "@/components/CarouselPrizes";
-import { prizes } from "@/data/prizes";
+import { getPrizes } from "./actions";
+
+// import { prizes } from "@/data/prizes";
 
 
 
@@ -11,8 +13,8 @@ import { prizes } from "@/data/prizes";
 
 
 export default async function Home() {
+  const prizes = await getPrizes()
   // const session = await getSession()
-
 
 
   return (
@@ -26,9 +28,12 @@ export default async function Home() {
 
 
     <div>
-      {/* <PrizeCard id={""} name={"dasdsa"} description={"asdasd"} /> */}
 
-      <CarouselPrizes prizes={prizes} />
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 to-blue-900 p-8">
+        <CarouselPrizes
+          prizes={prizes}
+        />
+      </div>
     </div>
 
 
