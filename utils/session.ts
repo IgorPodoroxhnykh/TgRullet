@@ -2,7 +2,7 @@ import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-
+// Настройка секретного ключа
 const jwtSecret = process.env.JWT_SECRET;
 
 if (!jwtSecret) {
@@ -14,13 +14,16 @@ if (!jwtSecret) {
     }
 }
 
-
 const key = new TextEncoder().encode(
     jwtSecret || 'temporary-dev-key-min-32-chars-!!'
 );
 
-export const SESSION_DURATION = 60 * 60 * 1000 //1 hour
+export const SESSION_DURATION = 60 * 60 * 1000 // 1 час
 
+/**
+ * Шифрование данных сессии в JWT
+ * @param payload - Объект данных (например, { user: ..., expires: ... })
+ */
 export async function encrypt(payload: any) {
     try {
         if (!payload) {
@@ -30,7 +33,8 @@ export async function encrypt(payload: any) {
         return await new SignJWT(payload)
             .setProtectedHeader({ alg: "HS256" })
             .setIssuedAt()
-            .setExpirationTime("1 hour")
+            // Если в payload есть expires, используем его, иначе 1 час по умолчанию
+            .setExpirationTime(payload.expires || "1 hour")
             .sign(key);
     } catch (error) {
         console.error('Encryption error:', error);
@@ -38,17 +42,19 @@ export async function encrypt(payload: any) {
     }
 }
 
+/**
+ * Расшифровка JWT
+ * @param input - Строка токена
+ */
 export async function decrypt(input: string): Promise<any> {
     try {
         if (!input || typeof input !== 'string') {
             console.warn('Invalid input for decryption');
             return null;
         }
-
         const { payload } = await jwtVerify(input, key, {
             algorithms: ["HS256"],
         });
-
         return payload;
     } catch (error) {
         console.error('Decryption error:', error);
@@ -56,6 +62,10 @@ export async function decrypt(input: string): Promise<any> {
     }
 }
 
+/**
+ * Получение текущей сессии на сервере
+ * Удобно использовать в page.tsx или layout.tsx
+ */
 export async function getSession() {
     try {
         const cookieStore = await cookies();
@@ -73,10 +83,13 @@ export async function getSession() {
     }
 }
 
+/**
+ * Обновление сессии (обычно используется в Middleware)
+ * Продлевает время жизни куки, если пользователь активен
+ */
 export async function updateSession(request: NextRequest) {
     try {
         const session = request.cookies.get("session")?.value;
-        console.log(session, 'IIIII');
 
         if (!session) {
             return NextResponse.next();
@@ -84,18 +97,25 @@ export async function updateSession(request: NextRequest) {
 
         const parsed = await decrypt(session);
 
+        // Если не удалось расшифровать или сессия истекла, удаляем куку
         if (!parsed) {
             const response = NextResponse.next();
             response.cookies.delete("session");
             return response;
         }
 
-        if (parsed.exp && new Date(parsed.exp * 1000) < new Date()) {
+        // Проверка срока действия (exp в секундах)
+        const expires = parsed.exp ? new Date(parsed.exp * 1000) : new Date();
+        const now = new Date();
+
+        // Если сессия истекла, удаляем
+        if (expires < now) {
             const response = NextResponse.next();
             response.cookies.delete("session");
             return response;
         }
 
+        // Если сессия еще жива, обновляем её (продлеваем)
         const newExpires = new Date(Date.now() + SESSION_DURATION);
         const newSession = await encrypt({
             ...parsed,

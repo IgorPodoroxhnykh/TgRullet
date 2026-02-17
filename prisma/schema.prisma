@@ -7,23 +7,186 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Prize {
-  id            String   @id @default(cuid())
-  name          String
-  description   String   @db.Text
-  imageUrl      String?
-  probability   Float    @default(1.0)
-  totalCount    Int      @default(0)
-  redeemedCount Int      @default(0)
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
+// ============ ПОЛЬЗОВАТЕЛИ ============
+model User {
+  id         String  @id @default(cuid())
+  telegramId String  @unique
+  username   String?
+  firstName  String?
+  lastName   String?
 
-model Admin {
-  id        String   @id @default(cuid())
-  username  String   @unique
-  password  String
+  login    String? @unique
+  password String?
+
+  role     Role    @default(USER)
+  isActive Boolean @default(true)
+
+  // Только баланс токенов для игры
+  tokenBalance Int @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Связи
+  tokenTransactions TokenTransaction[]
+  spinHistories     SpinHistory[]
+  wonPrizes         UserPrize[]
+  payments          Payment[]
+
+  @@map("users")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// ============ ПРИЗЫ ============
+model Prize {
+  id          String  @id @default(cuid())
+  name        String
+  description String  @db.Text
+  imageUrl    String?
+
+  // Вероятность и количество
+  probability   Float @default(1.0) // Шанс выпадения (0.01 - 100)
+  totalCount    Int   @default(0) // Общее количество
+  redeemedCount Int   @default(0) // Сколько уже роздано
+
+  // Настройки
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Связи
+  spinHistories SpinHistory[]
+  wonPrizes     UserPrize[]
+
+  @@map("prizes")
+}
+
+// ============ ИСТОРИЯ ВРАЩЕНИЙ ============
+model SpinHistory {
+  id      String  @id @default(cuid())
+  userId  String
+  prizeId String? // NULL если ничего не выиграл
+
+  // Списано токенов за спин
+  tokensSpent Int @default(1)
+
+  // Для анимации рулетки
+  wheelIndex Int? // Позиция на колесе (0-35)
+
+  // RNG seed для верификации
+  seed String?
+
+  createdAt DateTime @default(now())
+
+  // Связи
+  user      User        @relation(fields: [userId], references: [id])
+  prize     Prize?      @relation(fields: [prizeId], references: [id])
+  wonPrizes UserPrize[]
+
+  @@map("spin_histories")
+}
+
+// ============ ВЫИГРАННЫЕ ПРИЗЫ ============
+model UserPrize {
+  id      String @id @default(cuid())
+  userId  String
+  prizeId String
+  spinId  String
+
+  // Статус приза
+  status    PrizeStatus @default(PENDING)
+  claimedAt DateTime?
+  shippedAt DateTime?
+
+  // Контактные данные для доставки
+  contactInfo String? // Telegram username или телефон
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Связи
+  user  User        @relation(fields: [userId], references: [id])
+  prize Prize       @relation(fields: [prizeId], references: [id])
+  spin  SpinHistory @relation(fields: [spinId], references: [id])
+
+  @@map("user_prizes")
+}
+
+enum PrizeStatus {
+  PENDING // Ожидает обработки
+  PROCESSING // В обработке
+  READY // Готов к выдаче
+  SHIPPED // Отправлен
+  COMPLETED // Завершен
+  CANCELLED // Отменен
+}
+
+// ============ ТРАНЗАКЦИИ ТОКЕНОВ ============
+model TokenTransaction {
+  id          String               @id @default(cuid())
+  userId      String
+  amount      Int // Положительное - покупка, отрицательное - спин
+  type        TokenTransactionType
+  description String?
+  paymentId   String? // Ссылка на платеж
+
+  // Для покупок
+  price    Float? // Цена в рублях
+  currency String? @default("RUB")
+
+  balanceAfter Int // Баланс после транзакции
+
+  createdAt DateTime @default(now())
+
+  // Связи
+  user    User     @relation(fields: [userId], references: [id])
+  payment Payment? @relation(fields: [paymentId], references: [id])
+
+  @@map("token_transactions")
+}
+
+enum TokenTransactionType {
+  PURCHASE // Покупка токенов
+  BONUS // Бонус (за регистрацию, первый спин)
+  SPIN_SPEND // Потрачено на вращение
+  REFUND // Возврат
+  ADMIN_ADD // Добавлено админом
+  ADMIN_REMOVE // Удалено админом
+}
+
+// ============ ПЛАТЕЖИ ============
+model Payment {
+  id            String        @id @default(cuid())
+  userId        String
+  amount        Float // Сумма в рублях
+  currency      String        @default("RUB")
+  status        PaymentStatus @default(PENDING)
+  paymentMethod String // YOOKASSA, CRYPTO, CARD
+  externalId    String? // ID в платежной системе
+
+  tokensAmount Int // Токенов к зачислению
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+
+  // Связи
+  user              User               @relation(fields: [userId], references: [id])
+  tokenTransactions TokenTransaction[]
+
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  CANCELLED
 }

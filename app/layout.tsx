@@ -25,9 +25,9 @@ export default function RootLayout({
       </head>
       <body
       >
-        <ErudaProvider>
-          {children}
-        </ErudaProvider>
+        {/* <ErudaProvider>
+        </ErudaProvider> */}
+        {children}
 
       </body>
     </html>

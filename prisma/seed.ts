@@ -1,28 +1,62 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from 'bcryptjs';
 
-
 const prisma = new PrismaClient();
 
 async function main() {
-
     console.log('🌱 Начало заполнения базы данных...\n');
 
-    // Создаём админа
-    console.log('👤 Создание администратора...');
-    const admin = await prisma.admin.upsert({
-        where: { username: 'admin' },
-        update: {},
+    // ============ СОЗДАНИЕ АДМИНА ============
+    console.log('👤 Создание пользователя-администратора...');
+    const adminPasswordHash = bcrypt.hashSync('admin123', 10);
+
+    const admin = await prisma.user.upsert({
+        where: { telegramId: 'ADMIN_ID_SEED' },
+        update: {
+            // Обновляем логин и пароль, если пользователь уже есть
+            login: 'admin',
+            password: adminPasswordHash,
+        },
         create: {
-            username: 'admin',
-            password: bcrypt.hashSync('admin123', 10),
+            telegramId: 'ADMIN_ID_SEED',
+            username: 'admin_user',
+            firstName: 'Admin',
+            lastName: 'System',
+            login: 'admin',
+            password: adminPasswordHash,
+            role: 'ADMIN',
+            isActive: true,
+            tokenBalance: 1000,
         },
     });
-    console.log('   ✅ Admin создан:', admin.username);
+    console.log('   ✅ Admin User создан:', admin.username, '| Логин:', admin.login, '| Роль:', admin.role);
 
+    // ============ СОЗДАНИЕ ТЕСТОВОГО ЮЗЕРА ============
+    console.log('👤 Создание тестового пользователя...');
+    const testUserPasswordHash = bcrypt.hashSync('password', 10);
 
+    const testUser = await prisma.user.upsert({
+        where: { telegramId: '123456789' },
+        update: {
+            login: 'test@user.com',
+            password: testUserPasswordHash,
+        },
+        create: {
+            telegramId: '123456789',
+            username: 'test_user',
+            firstName: 'Иван',
+            lastName: 'Тестовый',
+            login: 'test@user.com',
+            password: testUserPasswordHash,
+            role: 'USER',
+            isActive: true,
+            tokenBalance: 10,
+        },
+    });
+    console.log('   ✅ Test User создан:', testUser.username, '| Логин:', testUser.login, '| Баланс:', testUser.tokenBalance);
+
+    // ============ СОЗДАНИЕ ПРИЗОВ ============
     console.log('\n🎁 Создание призов...');
-
     const prizes = [
         {
             name: 'iPhone 15 Pro Max',
@@ -102,19 +136,16 @@ async function main() {
         const created = await prisma.prize.create({
             data: {
                 ...prize,
-                isActive: true,
+                isActive: true, // Убеждаемся, что приз активен
             },
         });
-        console.log(`   ✅ Prize создан: ${created.name}`);
+        console.log(`   ✅ Prize создан: ${created.name} (Шанс: ${created.probability}%, Кол-во: ${created.totalCount})`);
     }
-
-
 }
-
 
 main()
     .catch((e) => {
-        console.error('\n❌ Ошибка:', e.message);
+        console.error('\n❌ Ошибка при заполнении БД:', e.message);
         process.exit(1);
     })
     .finally(async () => {
