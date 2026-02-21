@@ -9,7 +9,6 @@ async function main() {
     // ============ СОЗДАНИЕ АДМИНА ============
     console.log('👤 Создание пользователя-администратора...');
     const adminPasswordHash = bcrypt.hashSync('admin123', 10);
-
     const admin = await prisma.user.upsert({
         where: { telegramId: 'ADMIN_ID_SEED' },
         update: {
@@ -29,31 +28,30 @@ async function main() {
             tokenBalance: 1000,
         },
     });
-    console.log('   ✅ Admin User создан:', admin.username, '| Логин:', admin.login, '| Роль:', admin.role);
+    console.log(`   ✅ Admin User создан: ${admin.username} | Логин: ${admin.login} | Роль: ${admin.role}`);
 
     // ============ СОЗДАНИЕ ТЕСТОВОГО ЮЗЕРА ============
     console.log('👤 Создание тестового пользователя...');
     const testUserPasswordHash = bcrypt.hashSync('password', 10);
-
     const testUser = await prisma.user.upsert({
         where: { telegramId: '123456789' },
         update: {
-            login: 'test@user.com',
+            login: 'testUser',
             password: testUserPasswordHash,
         },
         create: {
             telegramId: '123456789',
-            username: 'test_user',
+            username: 'testUser',
             firstName: 'Иван',
             lastName: 'Тестовый',
-            login: 'test@user.com',
+            login: 'testUser.com',
             password: testUserPasswordHash,
             role: 'USER',
             isActive: true,
             tokenBalance: 10,
         },
     });
-    console.log('   ✅ Test User создан:', testUser.username, '| Логин:', testUser.login, '| Баланс:', testUser.tokenBalance);
+    console.log(`   ✅ Test User создан: ${testUser.username} | Логин: ${testUser.login} | Баланс: ${testUser.tokenBalance}`);
 
     // ============ СОЗДАНИЕ ПРИЗОВ ============
     console.log('\n🎁 Создание призов...');
@@ -139,8 +137,66 @@ async function main() {
                 isActive: true, // Убеждаемся, что приз активен
             },
         });
-        console.log(`   ✅ Prize создан: ${created.name} (Шанс: ${created.probability}%, Кол-во: ${created.totalCount})`);
+        console.log(`   ✅ Prize создан: ${created.name} (Шанс: ${created.probability * 100}%, Кол-во: ${created.totalCount})`);
     }
+
+    // ============ ЗАПОЛНЕНИЕ ПОБЕДИТЕЛЕЙ ============
+    console.log('\n🏆 Заполнение победителей...');
+
+    // 1. Получаем призы (пользователи admin и testUser уже доступны из переменных выше)
+    const dbPrizes = await prisma.prize.findMany();
+    if (dbPrizes.length < 5) {
+        throw new Error('Недостаточно призов для создания победителей');
+    }
+
+    // 2. Очищаем таблицу перед заполнением (чтобы данные перезаписывались)
+    await prisma.winner.deleteMany({});
+    console.log('   🗑️ Старые записи о победителях удалены');
+
+    // 3. Создаем 5 победителей, используя существующие переменные admin и testUser
+    const winnersData = [
+        {
+            username: 'alex_gamer',
+            userId: admin.id,      // Используем переменную admin
+            prizeId: dbPrizes[0].id, // iPhone 15
+            isIssued: true,
+        },
+        {
+            username: 'maria_lucky',
+            userId: testUser.id,   // Используем переменную testUser
+            prizeId: dbPrizes[1].id, // MacBook
+            isIssued: false,
+        },
+        {
+            username: 'ivan_spin',
+            userId: admin.id,
+            prizeId: dbPrizes[2].id, // AirPods
+            isIssued: false,
+        },
+        {
+            username: 'elena_win',
+            userId: testUser.id,
+            prizeId: dbPrizes[3].id, // Apple Watch
+            isIssued: true,
+        },
+        {
+            username: 'petro_pro',
+            userId: admin.id,
+            prizeId: dbPrizes[4].id, // iPad
+            isIssued: false,
+        },
+    ];
+
+    for (const w of winnersData) {
+        await prisma.winner.create({
+            data: {
+                ...w,
+                // Устанавливаем дату выдачи, если приз выдан
+                issuedAt: w.isIssued ? new Date() : null,
+            },
+        });
+    }
+    console.log('   ✅ Создано 5 победителей');
 }
 
 main()

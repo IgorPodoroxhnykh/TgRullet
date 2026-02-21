@@ -32,10 +32,12 @@ model User {
   spinHistories     SpinHistory[]
   wonPrizes         UserPrize[]
   payments          Payment[]
+  winners           Winner[] // Добавлена связь с победителями
 
   @@map("users")
 }
 
+// ============ РОЛИ ============
 enum Role {
   USER
   ADMIN
@@ -62,6 +64,7 @@ model Prize {
   // Связи
   spinHistories SpinHistory[]
   wonPrizes     UserPrize[]
+  winners       Winner[] // Добавлена связь с победителями
 
   @@map("prizes")
 }
@@ -189,4 +192,21 @@ enum PaymentStatus {
   FAILED
   REFUNDED
   CANCELLED
+}
+
+// ============ ПОБЕДИТЕЛИ ============
+model Winner {
+  id        String    @id @default(cuid())
+  userId    String
+  username  String
+  prizeId   String
+  isIssued  Boolean   @default(false)
+  issuedAt  DateTime? // <--- Убедитесь, что эта строка есть
+  createdAt DateTime  @default(now())
+
+  // Связи
+  user  User  @relation(fields: [userId], references: [id])
+  prize Prize @relation(fields: [prizeId], references: [id])
+
+  @@map("winners")
 }
