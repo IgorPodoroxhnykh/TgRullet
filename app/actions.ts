@@ -1,66 +1,3 @@
-// 'use server'
-
-// import { prisma } from '@/prisma/prisma-client'
-// import { cookies } from 'next/headers';
-// import { decrypt } from "@/utils/session";
-// import { User } from '@/types/user';
-
-
-
-// export async function getPrizes() {
-//     return await prisma.prize.findMany()
-// }
-
-
-// // Новое действие: Крутить барабан
-// export async function spinWheel(): Promise<{ success: boolean; user?: User; message?: string }> {
-//     const cookieStore = await cookies();
-//     const sessionToken = cookieStore.get('session')?.value;
-
-//     if (!sessionToken) return { success: false, message: 'Не авторизован' };
-
-//     const decrypted = await decrypt(sessionToken);
-//     const userId = decrypted?.user?.id;
-
-//     if (!userId) return { success: false, message: 'Ошибка сессии' };
-
-//     // Проверяем баланс
-//     const user = await prisma.user.findUnique({
-//         where: { id: userId },
-//         select: { tokenBalance: true },
-//     });
-
-//     if (!user || user.tokenBalance < 1) {
-//         return { success: false, message: 'Недостаточно токенов' };
-//     }
-
-//     // Списываем токен
-//     try {
-//         const updatedUser = await prisma.user.update({
-//             where: { id: userId },
-//             data: { tokenBalance: { decrement: 1 } },
-//             select: {
-//                 id: true,
-//                 telegramId: true,
-//                 username: true,
-//                 firstName: true,
-//                 lastName: true,
-//                 tokenBalance: true,
-//                 createdAt: true,
-//             },
-//         });
-
-//         return { success: true, user: updatedUser as User };
-//     } catch (error) {
-//         console.error('Spin Error:', error);
-//         return { success: false, message: 'Ошибка обновления' };
-//     }
-// }
-
-
-//================
-
-
 'use server'
 
 import { prisma } from '@/prisma/prisma-client'
@@ -69,7 +6,10 @@ import { decrypt } from "@/utils/session";
 import { User } from '@/types/user';
 
 export async function getPrizes() {
-    return await prisma.prize.findMany()
+    // Возвращаем только АКТИВНЫЕ призы для карусели и игры
+    return await prisma.prize.findMany({
+        where: { isActive: true }
+    });
 }
 
 // Тип для возвращаемого приза (упрощенный)
@@ -115,7 +55,7 @@ export async function spinWheel(): Promise<{
                 throw new Error('Недостаточно токенов');
             }
 
-            // Получаем активные призы
+            // Получаем активные призы (уже есть фильтр isActive: true)
             const prizes = await tx.prize.findMany({
                 where: { isActive: true },
             });
@@ -128,7 +68,6 @@ export async function spinWheel(): Promise<{
             // поэтому используем Math.random() от 0 до 1.
             let wonPrize: typeof prizes[0] | null = null;
             const randomChance = Math.random();
-
             let cumulativeProbability = 0;
 
             // Перемешиваем призы, чтобы при равных вероятностях выпадал случайный
@@ -180,6 +119,41 @@ export async function spinWheel(): Promise<{
                         isIssued: false,
                     },
                 });
+
+                // --- ЛОГИКА ЛИМИТА (Удаляем только выданные) ---
+                const WINNERS_LIMIT = 50; // Установи желаемый лимит
+
+                // Считаем общее количество победителей
+                const totalCount = await tx.winner.count();
+
+                if (totalCount > WINNERS_LIMIT) {
+                    const excess = totalCount - WINNERS_LIMIT;
+
+                    // Ищем ID старых записей, которые уже выданы
+                    const winnersToDelete = await tx.winner.findMany({
+                        where: {
+                            isIssued: true, // Удаляем только выданные
+                        },
+                        orderBy: {
+                            createdAt: 'asc', // Сначала старые
+                        },
+                        select: {
+                            id: true,
+                        },
+                        take: excess,
+                    });
+
+                    // Если нашли что удалять
+                    if (winnersToDelete.length > 0) {
+                        const idsToDelete = winnersToDelete.map(w => w.id);
+                        await tx.winner.deleteMany({
+                            where: {
+                                id: { in: idsToDelete },
+                            },
+                        });
+                    }
+                }
+                // --------------------------------------------------------------
 
                 // Добавляем в инвентарь пользователя
                 await tx.userPrize.create({

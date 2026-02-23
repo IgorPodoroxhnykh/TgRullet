@@ -1,18 +1,16 @@
-// components/dashboard/PrizeRow.tsx
 'use client'
-
 import { Prize, PrizeFormData } from '@/types/prize'
 
 interface PrizeRowProps {
     prize: Prize
     isEditing: boolean
-    editData: Partial<PrizeFormData>  // ← Меняем тип
+    editData: Partial<PrizeFormData>
     isSaving: boolean
     onEdit: () => void
     onSave: () => void
     onCancel: () => void
     onDelete: () => void
-    onEditDataChange: (data: Partial<PrizeFormData>) => void  // ← Меняем тип
+    onEditDataChange: (data: Partial<PrizeFormData>) => void
 }
 
 export default function PrizeRow({
@@ -37,8 +35,8 @@ export default function PrizeRow({
 
     return (
         <tr className="hover:bg-gray-50">
-            {/* Название */}
-            <td className="px-6 py-4 whitespace-nowrap">
+            {/* Название - 30% */}
+            <td className="px-6 py-4 whitespace-nowrap w-[30%]">
                 {isEditing ? (
                     <input
                         type="text"
@@ -52,9 +50,8 @@ export default function PrizeRow({
                     <div className="text-sm font-medium text-gray-900">{prize.name}</div>
                 )}
             </td>
-
-            {/* Описание */}
-            <td className="px-6 py-4">
+            {/* Описание - 35% */}
+            <td className="px-6 py-4 w-[35%]">
                 {isEditing ? (
                     <textarea
                         value={editData.description || ''}
@@ -68,9 +65,8 @@ export default function PrizeRow({
                     <div className="text-sm text-gray-500 line-clamp-2">{prize.description}</div>
                 )}
             </td>
-
-            {/* Вероятность */}
-            <td className="px-6 py-4 whitespace-nowrap">
+            {/* Вероятность - 15% */}
+            <td className="px-6 py-4 whitespace-nowrap w-[15%]">
                 {isEditing ? (
                     <div className="flex items-center space-x-2">
                         <input
@@ -95,32 +91,9 @@ export default function PrizeRow({
                     </div>
                 )}
             </td>
-
-            {/* Количество */}
-            <td className="px-6 py-4 whitespace-nowrap">
-                {isEditing ? (
-                    <input
-                        type="number"
-                        min="0"
-                        value={editData.totalCount || 0}
-                        onChange={(e) => onEditDataChange({
-                            ...editData,
-                            totalCount: Math.max(0, parseInt(e.target.value) || 0)
-                        })}
-                        onKeyDown={handleKeyDown}
-                        className="w-16 border rounded px-2 py-1 text-sm"
-                        disabled={isSaving}
-                    />
-                ) : (
-                    <div className="text-sm text-gray-900">
-                        <span className="font-medium">{prize.totalCount}</span>
-                        <span className="text-gray-500">/{prize.redeemedCount}</span>
-                    </div>
-                )}
-            </td>
-
-            {/* Статус */}
-            <td className="px-6 py-4 whitespace-nowrap">
+            {/* Столбец "Всего/Выдано" УДАЛЕН */}
+            {/* Статус - 10% */}
+            <td className="px-6 py-4 whitespace-nowrap w-[10%]">
                 {isEditing ? (
                     <label className="flex items-center">
                         <input
@@ -141,9 +114,8 @@ export default function PrizeRow({
                     </span>
                 )}
             </td>
-
-            {/* Действия */}
-            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            {/* Действия - 10% */}
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium w-[10%]">
                 {isEditing ? (
                     <div className="flex gap-2">
                         <button
@@ -171,13 +143,6 @@ export default function PrizeRow({
                             className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
                         >
                             ✏️
-                        </button>
-                        <button
-                            onClick={onDelete}
-                            disabled={isSaving}
-                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                        >
-                            🗑️
                         </button>
                     </div>
                 )}

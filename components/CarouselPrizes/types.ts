@@ -1,4 +1,5 @@
-import { Prize } from '@/types/prize';
+//  import { Prize } from '@/types/prize';
+import { Prize as PrizeType } from '@/types/prize';
 
 export interface Dimensions {
     width: number;
@@ -11,9 +12,9 @@ export interface CarouselRef {
 }
 
 export interface ICarouselPrizesProps {
-    prizes: Prize[];
+    prizes: PrizeType[];
     className?: string;
-    onPrizeSelect?: (prize: Prize) => void;
+    onPrizeSelect?: (prize: PrizeType) => void;
 
     // Логика токенов
     onSpin?: () => Promise<boolean>;

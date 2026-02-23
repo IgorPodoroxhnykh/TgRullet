@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { CONFIG, easeInOutCubic, easeOutQuart } from './constants'
-import { IPrize, Dimensions, CarouselRef } from './types'
+import { Prize } from '@/types/prize' // <--- Импортируем напрямую
+import { Dimensions } from './types'
 
-export const useCarousel = (prizes: IPrize[], onPrizeSelect?: (prize: IPrize) => void) => {
+export const useCarousel = (prizes: Prize[], onPrizeSelect?: (prize: Prize) => void) => {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [virtualIndex, setVirtualIndex] = useState(0)
     const [isAnimating, setIsAnimating] = useState(false)
