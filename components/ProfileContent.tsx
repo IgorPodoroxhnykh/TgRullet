@@ -32,7 +32,7 @@ export function ProfileContent({ initialUser, prizes }: ProfileContentProps) {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 p-4 pt-24">
+        <div className="min-h-screen bg-slate-950 p-4 pt-4">
             <div className="max-w-2xl mx-auto space-y-6">
                 {/* Карточка профиля */}
                 <UserInfoCard user={user} />

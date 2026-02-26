@@ -4,6 +4,7 @@ import PrizeCard from '../PrizeCard'
 import { useCarousel } from './useCarousel'
 import { useCarouselSounds } from './useCarouselSounds'
 import { ICarouselPrizesProps, CarouselRef } from './types'
+import { selectPrizeByProbability } from '@/lib/prize-selector'
 
 const CarouselPrizes = forwardRef<CarouselRef, ICarouselPrizesProps>(
     ({ prizes, className = '', onPrizeSelect, onSpin, balance = 0, isSpinning = false, requireTokens = false }, ref) => {
@@ -35,7 +36,6 @@ const CarouselPrizes = forwardRef<CarouselRef, ICarouselPrizesProps>(
                     audio.pause()
                     audio.currentTime = 0
                 }
-                // Звук при остановке
                 playStopSound()
             }
         }, [isAnimating, animationPhase, playStopSound])
@@ -54,8 +54,10 @@ const CarouselPrizes = forwardRef<CarouselRef, ICarouselPrizesProps>(
             playStartSound()
             setLocalSpinning(true)
 
-            const randomIndex = Math.floor(Math.random() * totalCards)
-            spinTo(randomIndex)
+            // Выбираем приз по вероятности (с нормализацией)
+            const { index: targetIndex } = selectPrizeByProbability(prizes)
+
+            spinTo(targetIndex)
 
             if (onSpin) {
                 onSpin().finally(() => setLocalSpinning(false))
