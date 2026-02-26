@@ -48,7 +48,7 @@ async function main() {
     const testUser = await prisma.user.upsert({
         where: { telegramId: '123456789' },
         update: {
-            login: 'testUser',
+            login: 'testuser',
             password: testUserPasswordHash,
         },
         create: {
@@ -74,6 +74,7 @@ async function main() {
             imageUrl: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400',
             probability: 0.01,
             totalCount: 1,
+            isValuable: true,
             redeemedCount: 0,
         },
         {
@@ -82,6 +83,7 @@ async function main() {
             imageUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca4?w=400',
             probability: 0.02,
             totalCount: 2,
+            isValuable: true,
             redeemedCount: 0,
         },
         {
@@ -90,6 +92,7 @@ async function main() {
             imageUrl: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400',
             probability: 0.05,
             totalCount: 5,
+            isValuable: true,
             redeemedCount: 0,
         },
         {
@@ -98,6 +101,7 @@ async function main() {
             imageUrl: 'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=400',
             probability: 0.07,
             totalCount: 7,
+            isValuable: true,
             redeemedCount: 0,
         },
         {
@@ -106,6 +110,7 @@ async function main() {
             imageUrl: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400',
             probability: 0.1,
             totalCount: 10,
+            isValuable: true,
             redeemedCount: 0,
         },
         {
@@ -114,6 +119,7 @@ async function main() {
             imageUrl: null,
             probability: 0.15,
             totalCount: 50,
+            isValuable: false,
             redeemedCount: 0,
         },
         {
@@ -122,6 +128,7 @@ async function main() {
             imageUrl: null,
             probability: 0.2,
             totalCount: 100,
+            isValuable: false,
             redeemedCount: 0,
         },
         {
@@ -130,6 +137,7 @@ async function main() {
             imageUrl: null,
             probability: 0.25,
             totalCount: 200,
+            isValuable: false,
             redeemedCount: 0,
         },
         {
@@ -138,6 +146,7 @@ async function main() {
             imageUrl: null,
             probability: 0.15,
             totalCount: 300,
+            isValuable: false,
             redeemedCount: 0,
         },
     ];
@@ -167,27 +176,9 @@ async function main() {
             isIssued: true,
         },
         {
-            username: 'maria_lucky',
+            username: 'test_user',
             userId: testUser.id,
             prizeId: dbPrizes[1].id,
-            isIssued: false,
-        },
-        {
-            username: 'ivan_spin',
-            userId: admin.id,
-            prizeId: dbPrizes[2].id,
-            isIssued: false,
-        },
-        {
-            username: 'elena_win',
-            userId: testUser.id,
-            prizeId: dbPrizes[3].id,
-            isIssued: true,
-        },
-        {
-            username: 'petro_pro',
-            userId: admin.id,
-            prizeId: dbPrizes[4].id,
             isIssued: false,
         },
     ];

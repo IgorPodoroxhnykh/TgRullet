@@ -21,7 +21,6 @@ export default function PrizeRow({
     onEdit,
     onSave,
     onCancel,
-    onDelete,
     onEditDataChange
 }: PrizeRowProps) {
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -35,8 +34,8 @@ export default function PrizeRow({
 
     return (
         <tr className="hover:bg-gray-50">
-            {/* Название - 30% */}
-            <td className="px-6 py-4 whitespace-nowrap w-[30%]">
+            {/* Название - 25% */}
+            <td className="px-6 py-4 whitespace-nowrap w-[25%]">
                 {isEditing ? (
                     <input
                         type="text"
@@ -50,8 +49,9 @@ export default function PrizeRow({
                     <div className="text-sm font-medium text-gray-900">{prize.name}</div>
                 )}
             </td>
-            {/* Описание - 35% */}
-            <td className="px-6 py-4 w-[35%]">
+
+            {/* Описание - 30% */}
+            <td className="px-6 py-4 w-[30%]">
                 {isEditing ? (
                     <textarea
                         value={editData.description || ''}
@@ -65,10 +65,11 @@ export default function PrizeRow({
                     <div className="text-sm text-gray-500 line-clamp-2">{prize.description}</div>
                 )}
             </td>
-            {/* Вероятность - 15% */}
-            <td className="px-6 py-4 whitespace-nowrap w-[15%]">
+
+            {/* Вероятность - 10% */}
+            <td className="px-6 py-4 whitespace-nowrap w-[10%]">
                 {isEditing ? (
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1">
                         <input
                             type="number"
                             step="0.01"
@@ -80,7 +81,7 @@ export default function PrizeRow({
                                 probability: Math.max(0, Math.min(1, parseFloat(e.target.value) / 100 || 0))
                             })}
                             onKeyDown={handleKeyDown}
-                            className="w-20 border rounded px-2 py-1 text-sm"
+                            className="w-16 border rounded px-2 py-1 text-sm"
                             disabled={isSaving}
                         />
                         <span className="text-sm text-gray-600">%</span>
@@ -91,7 +92,30 @@ export default function PrizeRow({
                     </div>
                 )}
             </td>
-            {/* Столбец "Всего/Выдано" УДАЛЕН */}
+
+            {/* Ценный приз - 10% */}
+            <td className="px-6 py-4 whitespace-nowrap w-[10%]">
+                {isEditing ? (
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={editData.isValuable ?? false}
+                            onChange={(e) => onEditDataChange({ ...editData, isValuable: e.target.checked })}
+                            className="mr-2"
+                            disabled={isSaving}
+                        />
+                        <span className="text-sm">💎</span>
+                    </label>
+                ) : (
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${prize.isValuable
+                        ? 'bg-purple-100 text-purple-800'
+                        : 'bg-gray-100 text-gray-800'
+                        }`}>
+                        {prize.isValuable ? '💎 Ценный' : 'Обычный'}
+                    </span>
+                )}
+            </td>
+
             {/* Статус - 10% */}
             <td className="px-6 py-4 whitespace-nowrap w-[10%]">
                 {isEditing ? (
@@ -114,8 +138,9 @@ export default function PrizeRow({
                     </span>
                 )}
             </td>
-            {/* Действия - 10% */}
-            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium w-[10%]">
+
+            {/* Действия - 15% */}
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium w-[15%]">
                 {isEditing ? (
                     <div className="flex gap-2">
                         <button
@@ -136,15 +161,13 @@ export default function PrizeRow({
                         </button>
                     </div>
                 ) : (
-                    <div className="flex gap-2">
-                        <button
-                            onClick={onEdit}
-                            disabled={isSaving}
-                            className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
-                        >
-                            ✏️
-                        </button>
-                    </div>
+                    <button
+                        onClick={onEdit}
+                        disabled={isSaving}
+                        className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
+                    >
+                        ✏️
+                    </button>
                 )}
             </td>
         </tr>

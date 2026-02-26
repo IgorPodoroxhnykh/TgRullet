@@ -171,7 +171,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     <div className="mt-4 text-xs text-gray-400">
                         Для разработки: <br />
                         Админ: <b>admin</b> / <b>admin123</b><br />
-                        Юзер: <b>testUser</b> / <b>password</b>
+                        Юзер: <b>testuser</b> / <b>password</b>
                     </div>
                 </div>
             </div>

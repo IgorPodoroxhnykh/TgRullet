@@ -45,26 +45,24 @@ enum Role {
 
 // ============ ПРИЗЫ ============
 model Prize {
-  id          String  @id @default(cuid())
-  name        String
-  description String  @db.Text
-  imageUrl    String?
-
+  id            String        @id @default(cuid())
+  name          String
+  description   String        @db.Text
+  imageUrl      String?
   // Вероятность и количество
-  probability   Float @default(1.0) // Шанс выпадения (0.01 - 100)
-  totalCount    Int   @default(0) // Общее количество
-  redeemedCount Int   @default(0) // Сколько уже роздано
-
+  probability   Float         @default(1.0)
+  totalCount    Int           @default(0)
+  redeemedCount Int           @default(0)
+  // Новое поле: является ли приз ценным
+  isValuable    Boolean       @default(false)
   // Настройки
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   // Связи
   spinHistories SpinHistory[]
   wonPrizes     UserPrize[]
-  winners       Winner[] // Добавлена связь с победителями
+  winners       Winner[]
 
   @@map("prizes")
 }
@@ -201,7 +199,7 @@ model Winner {
   username  String
   prizeId   String
   isIssued  Boolean   @default(false)
-  issuedAt  DateTime? // <--- Убедитесь, что эта строка есть
+  issuedAt  DateTime?
   createdAt DateTime  @default(now())
 
   // Связи

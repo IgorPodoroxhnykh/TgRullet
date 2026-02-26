@@ -7,9 +7,8 @@ import { ICarouselPrizesProps, CarouselRef } from './types'
 
 const CarouselPrizes = forwardRef<CarouselRef, ICarouselPrizesProps>(
     ({ prizes, className = '', onPrizeSelect, onSpin, balance = 0, isSpinning = false, requireTokens = false }, ref) => {
-
         const [localSpinning, setLocalSpinning] = useState(false)
-        const { playStartSound, playWrongSound } = useCarouselSounds()
+        const { playStartSound, playWrongSound, playStopSound } = useCarouselSounds()
         const hasTokens = balance > 0
 
         const {
@@ -25,29 +24,27 @@ const CarouselPrizes = forwardRef<CarouselRef, ICarouselPrizesProps>(
 
         // Управление звуком вращения
         useEffect(() => {
-            const spinSound = document.querySelector('audio[src="/sounds/spin.mp3"]') as HTMLAudioElement;
-
             if (isAnimating && animationPhase === 'spin') {
-                // Создаем новый Audio элемент для вращения
-                const audio = new Audio('/sounds/spin.mp3');
-                audio.loop = true;
-                audio.play().catch(() => { });
-                (window as any).__spinAudio = audio;
+                const audio = new Audio('/sounds/spin.mp3')
+                audio.loop = true
+                audio.play().catch(() => { })
+                    ; (window as any).__spinAudio = audio
             } else if (!isAnimating && animationPhase === 'idle') {
-                const audio = (window as any).__spinAudio as HTMLAudioElement;
+                const audio = (window as any).__spinAudio as HTMLAudioElement
                 if (audio) {
-                    audio.pause();
-                    audio.currentTime = 0;
+                    audio.pause()
+                    audio.currentTime = 0
                 }
+                // Звук при остановке
+                playStopSound()
             }
-        }, [isAnimating, animationPhase])
+        }, [isAnimating, animationPhase, playStopSound])
 
         useImperativeHandle(ref, () => ({ spinTo }), [spinTo])
 
         const handleSpinClick = async () => {
             if (isAnimating || localSpinning) return
 
-            // Проверка токенов
             if (requireTokens && !hasTokens) {
                 playWrongSound()
                 console.log('Нет токенов! balance:', balance)
@@ -68,6 +65,7 @@ const CarouselPrizes = forwardRef<CarouselRef, ICarouselPrizesProps>(
         }
 
         const isButtonDisabled = isAnimating || localSpinning
+
         const buttonText = requireTokens && !hasTokens
             ? 'Нет токенов'
             : localSpinning || isAnimating
@@ -126,7 +124,13 @@ const CarouselPrizes = forwardRef<CarouselRef, ICarouselPrizesProps>(
                             {visibleItems.map((item) => (
                                 <div key={item.prize.id} className="absolute top-1/2 -translate-y-1/2" style={item.style}>
                                     <div className={`w-full h-full shadow-lg rounded-lg overflow-hidden transition-all duration-300 ${item.isCenter ? 'ring-4 ring-yellow-400/50 shadow-2xl' : ''}`}>
-                                        <PrizeCard id={item.prize.id} name={item.prize.name} description={item.prize.description} className="w-full h-full" />
+                                        <PrizeCard
+                                            id={item.prize.id}
+                                            name={item.prize.name}
+                                            description={item.prize.description}
+                                            imageUrl={item.prize.imageUrl}
+                                            className="w-full h-full"
+                                        />
                                     </div>
                                 </div>
                             ))}
@@ -157,4 +161,5 @@ const CarouselPrizes = forwardRef<CarouselRef, ICarouselPrizesProps>(
 )
 
 CarouselPrizes.displayName = 'CarouselPrizes'
+
 export default CarouselPrizes

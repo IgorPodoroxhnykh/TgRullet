@@ -20,13 +20,8 @@ export default function HomeContent({ prizes, initialBalance = 0 }: HomeContentP
     }
 
     return (
-        <div className="relative min-h-screen bg-slate-950 flex flex-col items-center pt-24 px-4">
+        <div className="relative min-h-screen bg-slate-950 flex flex-col items-center pt-4 px-4">
             <div className="w-full max-w-2xl mx-auto space-y-8 flex flex-col items-center">
-                <div className="text-center space-y-2">
-                    <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 animate-fade-in drop-shadow-lg">
-                        Лотерея Призов
-                    </h1>
-                </div>
 
                 <div className="w-full bg-slate-900 rounded-3xl shadow-2xl p-6 border border-slate-800">
                     <CarouselPrizes

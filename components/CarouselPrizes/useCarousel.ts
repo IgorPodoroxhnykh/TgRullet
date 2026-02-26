@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { CONFIG, easeInOutCubic, easeOutQuart } from './constants'
-import { Prize } from '@/types/prize' // <--- Импортируем напрямую
+import { Prize } from '@/types/prize'
 import { Dimensions } from './types'
 
 export const useCarousel = (prizes: Prize[], onPrizeSelect?: (prize: Prize) => void) => {

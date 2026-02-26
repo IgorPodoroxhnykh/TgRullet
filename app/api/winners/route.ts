@@ -12,12 +12,16 @@ export async function GET() {
                     select: {
                         name: true,
                         imageUrl: true,
+                        isValuable: true, // <--- Добавляем поле isValuable
                     },
                 },
             },
         });
 
-        return NextResponse.json(winners);
+        // Фильтруем: оставляем только победителей с ценными призами
+        const valuableWinners = winners.filter(winner => winner.prize.isValuable === true);
+
+        return NextResponse.json(valuableWinners);
     } catch (error) {
         console.error('Ошибка при получении победителей:', error);
         return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });

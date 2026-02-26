@@ -1,29 +1,24 @@
-
-import React from 'react';
+import React from 'react'
 
 export interface IPrizeCardProps {
-    // id: string;
-    // name: string;
-    // description: string;
-    // className?: string;
-
-    id: string;
-    name: string;
-    description: string;
-    imageUrl?: string | null;
-    probability?: number;
-    totalCount?: number;
-    redeemedCount?: number;
-    isActive?: boolean;
-    createdAt?: Date;
-    updatedAt?: Date;
-    className?: string;
+    id: string
+    name: string
+    description: string
+    imageUrl?: string | null
+    probability?: number
+    totalCount?: number
+    redeemedCount?: number
+    isActive?: boolean
+    createdAt?: Date
+    updatedAt?: Date
+    className?: string
 }
 
 const PrizeCard: React.FC<IPrizeCardProps> = ({
     id,
     name,
     description,
+    imageUrl,
     className = '',
 }) => {
     return (
@@ -36,10 +31,16 @@ const PrizeCard: React.FC<IPrizeCardProps> = ({
         ${className}
       `}
         >
-            {/* ID приза */}
-            <div className="text-[10px] md:text-xs text-gray-400 mb-1">
-                ID: {id}
-            </div>
+            {/* Изображение */}
+            {imageUrl && (
+                <div className="mb-2 md:mb-3">
+                    <img
+                        src={imageUrl}
+                        alt={name}
+                        className="w-full h-24 md:h-32 object-cover rounded-lg"
+                    />
+                </div>
+            )}
 
             {/* Название приза */}
             <h3 className="font-semibold text-gray-800 text-sm md:text-base lg:text-lg mb-1 md:mb-2 line-clamp-1">
@@ -51,7 +52,7 @@ const PrizeCard: React.FC<IPrizeCardProps> = ({
                 {description}
             </p>
         </div>
-    );
-};
+    )
+}
 
-export default PrizeCard;
+export default PrizeCard

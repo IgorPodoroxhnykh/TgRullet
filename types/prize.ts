@@ -10,15 +10,20 @@ export interface Prize {
     isActive: boolean
     createdAt: string
     updatedAt: string
+    isValuable: boolean
 }
 
 export interface PrizeFormData {
     name: string
     description: string
-    imageUrl?: string | null
+    imageFile?: File | null
+    imageUrl?: string
+    imageHash?: string        // Добавляем хеш
+    existingImageUrl?: string // Добавляем существующий URL
     probability: number
     totalCount: number
     isActive: boolean
+    isValuable: boolean
 }
 
 // ✅ Добавляем экспорт ApiResponse

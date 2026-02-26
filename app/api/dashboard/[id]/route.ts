@@ -1,30 +1,39 @@
+
 import { NextResponse } from 'next/server'
 import { prisma } from '@/prisma/prisma-client'
 
-interface Params {
-    params: { id: string }
-}
-
 // PUT - обновить приз
-export async function PUT(request: Request, { params }: Params) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
-        const { id } = await params // ← ДОБАВИТЬ await
+        const { id } = await params
         const body = await request.json()
-        const { name, description, imageUrl, probability, totalCount, isActive } = body
 
         console.log('🔄 Обновляем приз:', id)
         console.log('📝 Данные:', body)
 
+        const { name, description, imageUrl, probability, totalCount, isActive, isValuable } = body
+
+        // Формируем данные для обновления
+        const updateData: any = {
+            name,
+            description,
+            probability: parseFloat(probability),
+            totalCount: parseInt(totalCount),
+            isActive,
+            isValuable: isValuable ?? false,
+        }
+
+        // Обновляем imageUrl только если он явно передан и не undefined
+        // (т.е. было изменение изображения)
+        if (body.hasOwnProperty('imageUrl') && body.imageUrl !== undefined) {
+            updateData.imageUrl = imageUrl || null
+        }
+
+        console.log('📦 Данные для Prisma:', updateData)
+
         const prize = await prisma.prize.update({
-            where: { id }, // ← ИСПРАВЛЕНО: id теперь определён
-            data: {
-                name,
-                description,
-                imageUrl: imageUrl || null,
-                probability: parseFloat(probability),
-                totalCount: parseInt(totalCount),
-                isActive
-            }
+            where: { id },
+            data: updateData,
         })
 
         console.log('✅ Приз обновлён:', prize)
@@ -36,16 +45,13 @@ export async function PUT(request: Request, { params }: Params) {
 }
 
 // DELETE - удалить приз
-export async function DELETE(request: Request, { params }: { params: Params['params'] }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
-        const { id } = await params // ← Await params
-
+        const { id } = await params
         console.log('🗑️ Удаляем приз:', id)
-
         await prisma.prize.delete({
-            where: { id }
+            where: { id },
         })
-
         return NextResponse.json({ message: 'Приз удалён' })
     } catch (error) {
         console.error('❌ Ошибка:', error)

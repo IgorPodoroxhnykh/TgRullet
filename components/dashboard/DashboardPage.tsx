@@ -1,3 +1,4 @@
+
 'use client'
 import { useState, useMemo } from 'react'
 import { usePrizes } from '@/hooks/usePrizes'
@@ -19,18 +20,20 @@ export default function DashboardPage() {
 
     const [showAddForm, setShowAddForm] = useState(false)
 
-    // Сортировка призов: Сначала Активные, потом Неактивные
+    // Сортировка призов
     const sortedPrizes = useMemo(() => {
         return [...prizes].sort((a, b) => {
-            // 1. По статусу: Активные (true) должны быть выше Неактивных (false)
-            // b.isActive - a.isActive дает -1 (если a=true, b=false), то есть 'a' идет раньше. Верно.
             if (a.isActive !== b.isActive) {
-                return b.isActive ? 1 : -1;
+                return b.isActive ? 1 : -1
             }
-            // 2. По дате (опционально): Новые выше внутри каждой группы
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        });
-    }, [prizes]);
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        })
+    }, [prizes])
+
+    // Безопасное закрытие формы
+    const handleCloseForm = () => {
+        setShowAddForm(false)
+    }
 
     if (loading) {
         return (
@@ -53,10 +56,7 @@ export default function DashboardPage() {
                         <div className="text-red-500 text-4xl mb-4">⚠️</div>
                         <h2 className="text-xl font-semibold text-gray-900 mb-2">Ошибка загрузки</h2>
                         <p className="text-gray-600 mb-4">{error}</p>
-                        <button
-                            onClick={refetch}
-                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                        >
+                        <button onClick={refetch} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                             Повторить
                         </button>
                     </div>
@@ -72,8 +72,7 @@ export default function DashboardPage() {
                 <h1 className="text-2xl font-bold">Панель Управления - Призы</h1>
                 <button
                     onClick={() => setShowAddForm(true)}
-                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 
-          flex items-center gap-2 transition-colors"
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center gap-2 transition-colors"
                 >
                     <span>➕</span>
                     Добавить Приз
@@ -85,31 +84,21 @@ export default function DashboardPage() {
                 <StatisticsCards prizes={prizes} />
             </div>
 
-            {/* Основной контент в две колонки */}
+            {/* Основной контент */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                {/* Правая колонка: Панель победителей (занимает 1/3 ширины) */}
                 <div className="lg:col-span-1">
                     <WinnersPanel />
                 </div>
-
-                {/* Левая колонка: Таблица призов (занимает 2/3 ширины) */}
                 <div className="lg:col-span-2">
-                    {/* Передаем отсортированный массив */}
-                    <PrizeTable
-                        prizes={sortedPrizes}
-                        onUpdate={updatePrize}
-                        onDelete={deletePrize}
-                    />
+                    <PrizeTable prizes={sortedPrizes} onUpdate={updatePrize} onDelete={deletePrize} />
                 </div>
-
             </div>
 
-            {/* Форма добавления (всплывает поверх или внизу) */}
+            {/* Форма добавления */}
             {showAddForm && (
                 <AddPrizeForm
                     onSubmit={addPrize}
-                    onClose={() => setShowAddForm(false)}
+                    onClose={handleCloseForm}
                 />
             )}
         </div>
